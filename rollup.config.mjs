@@ -1,11 +1,13 @@
-import {defineConfig} from "rollup";
+import { defineConfig } from "rollup";
 import json from "@rollup/plugin-json";
-import {nodeResolve} from "@rollup/plugin-node-resolve";
-import {glob} from "glob";
+import { nodeResolve } from "@rollup/plugin-node-resolve";
+import { glob } from "glob";
 import fs from "node:fs";
 import dts from "rollup-plugin-dts";
-import ts from "rollup-plugin-ts";
-import terser from '@rollup/plugin-terser';
+// import terser from '@rollup/plugin-terser';
+// import esbuild from 'rollup-plugin-esbuild';
+import typescript from '@rollup/plugin-typescript';
+
 // 运行之前删除map文件
 glob.glob("**/*.js.map", {
     ignore: ["node_modules/**/*"]
@@ -18,10 +20,10 @@ glob.glob("**/*.js.map", {
 });
 
 
-const plugins = [json(), nodeResolve(), ts(), {
+const plugins = [json(), nodeResolve(), typescript(), {
     writeBundle()
     {
-        console.log('Build finished, execute your code...')
+        console.log('Build finished, execute your code...');
         // 创建package.json
         const cjs_package_json = "dist/cjs/package.json";
         if (!fs.existsSync(cjs_package_json))
@@ -29,7 +31,7 @@ const plugins = [json(), nodeResolve(), ts(), {
             fs.writeFileSync(cjs_package_json, `{
     "type": "commonjs",
     "types": "../index.d.ts"
-}`)
+}`);
         }
         const es_package_json = "dist/es/package.json";
         if (!fs.existsSync(es_package_json))
@@ -37,26 +39,26 @@ const plugins = [json(), nodeResolve(), ts(), {
             fs.writeFileSync(es_package_json, `{
     "type": "module",
     "types": "../index.d.ts"
-}`)
+}`);
         }
     }
 }];
 
 
-if (process.env.build === "dev")
-{
+// if (process.env.build === "dev")
+// {
 
-} else if (process.env.build === "build")
-{
-    plugins.push(terser({
-        compress: {
-            unsafe: true
-        },
-        format: {
-            comments: false
-        }
-    }));
-}
+// } else if (process.env.build === "build")
+// {
+//     plugins.push(terser({
+//         compress: {
+//             unsafe: true
+//         },
+//         format: {
+//             comments: false
+//         }
+//     }));
+// }
 
 export default defineConfig([
     {
@@ -81,7 +83,7 @@ export default defineConfig([
     },
     {
         input: "./src/index.ts",
-        output: [{file: "dist/index.d.ts", format: "es"}],
+        output: [{ file: "dist/index.d.ts", format: "es" }],
         plugins: [dts()],
     },
 
